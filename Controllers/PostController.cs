@@ -6,74 +6,43 @@ namespace Homework1.Controllers
 {
 	[Route("[controller]")]
 	[ApiController]
-	public class PostController(APIContext context) : Controller
+	public class PostController(JsonPlaceholderClient client) : Controller
 	{
-		private readonly APIContext _context = context;
+		private readonly JsonPlaceholderClient _client = client;
 
 		[HttpGet("{id}")]
-		public JsonResult GetPost(int id)
+		public async Task<JsonResult> GetPost(int id)
 		{
-			var result = _context.Posts.Find(id);
-
+			var result = await _client.GetPostById(id);
 			return result is null ? new JsonResult(NotFound()) : new JsonResult(Ok(result));
 		}
 
 		[HttpGet]
-		public JsonResult GetPost(int userId, string title)
+		public async Task<JsonResult> GetPost(int userId, string title)
 		{
-			var result = _context.Posts.FirstOrDefault(p => p.UserId == userId && p.Title == title);
-
+			var result = await _client.GetPostByUserAndTitle(userId, title);
 			return result is null ? new JsonResult(NotFound()) : new JsonResult(Ok(result));
 		}
 
 		[HttpPost]
-		public JsonResult CreatePost(Post post)
+		public async Task<JsonResult> CreatePost(Post post)
 		{
-			if (post.Id == 0)
-			{
-				_context.Posts.Add(post);
-			}
-			else
-			{
-				var postInDB = _context.Posts.Find(post.Id);
-
-				if (postInDB is null)
-				{
-					return new JsonResult(NotFound());
-				}
-			}
-
-			_context.SaveChanges();
-
-			return new JsonResult(Ok(post));
+			var result = await _client.CreatePost(post);
+			return result is null ? new JsonResult(BadRequest()) : new JsonResult(Ok(result));
 		}
 
 		[HttpPut("{id}")]
-		public JsonResult UpdatePost(int id, Post updatedPost)
+		public async Task<JsonResult> UpdatePost(int id, Post updatedPost)
 		{
-			var postInDb = _context.Posts.Find(id);
-			if (postInDb is null)
-				return new JsonResult(NotFound());
-
-			postInDb.UserId = updatedPost.UserId;
-			postInDb.Title = updatedPost.Title;
-			postInDb.Body = updatedPost.Body;
-
-			_context.SaveChanges();
-			return new JsonResult(Ok(postInDb));
+			var result = await _client.UpdatePost(id, updatedPost);
+			return result is null ? new JsonResult(NotFound()) : new JsonResult(Ok(result));
 		}
 
 		[HttpDelete("{id}")]
-		public JsonResult DeletePost(int id)
+		public async Task<JsonResult> DeletePost(int id)
 		{
-			var postInDB = _context.Posts.Find(id);
-			if (postInDB is not null)
-			{
-				_context.Posts.Remove(postInDB);
-				_context.SaveChanges();
-			}
-			
-			return new JsonResult(NoContent());
+			var success = await _client.DeletePost(id);
+			return success ? new JsonResult(NoContent()) : new JsonResult(NotFound());
 		}
 	}
 }

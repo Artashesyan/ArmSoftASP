@@ -12,7 +12,22 @@ namespace Homework1
 
 			// Add services to the container.
 
-			builder.Services.AddDbContext<APIContext>(option => option.UseInMemoryDatabase("PostsDB"));
+			//builder.Services.AddDbContext<APIContext>(option => option.UseInMemoryDatabase("PostsDB"));
+
+			builder.Services.AddHttpClient<JsonPlaceholderClient>((sp, client) =>
+			{
+				var config = sp.GetRequiredService<IConfiguration>();
+				var baseUrl = config["JsonPlaceholder:BaseUrl"];
+				client.BaseAddress = new Uri(baseUrl);
+			});
+
+			builder.Services.AddHttpClient<ReqResClient>((sp, client) =>
+			{
+				var config = sp.GetRequiredService<IConfiguration>();
+				client.BaseAddress = new Uri(config["ReqRes:BaseUrl"]);
+			});
+
+
 
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
