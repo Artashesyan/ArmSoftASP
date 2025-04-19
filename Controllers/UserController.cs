@@ -1,72 +1,61 @@
 ﻿using Homework1.Data;
 using Homework1.Models;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace Homework1.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("[controller]")]
 	[ApiController]
-	public class UserController(APIContext context) : Controller
+	public class UserController(ReqResClient client, ILogger<UserController> logger) : Controller
 	{
-		private readonly APIContext _context = context;
+		private readonly ReqResClient _client = client;
+		private static readonly List<UserDto> _users = [];
+		private readonly ILogger<UserController> _logger = logger;
+
+		[HttpPost("save")]
+		public IActionResult SaveUser([FromBody] UserDto user)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			if (_users.Any(u => u.Username.Equals(user.Username, StringComparison.OrdinalIgnoreCase)))
+				return BadRequest(new { message = "A user with that username already exists." });
+
+			_users.Add(user);
+
+			_logger.LogInformation("User '{Username}' was created successfully at {Time}.", user.Username, DateTime.UtcNow);
+
+			return Ok(new { message = "User saved successfully." });
+		}
+
 
 		[HttpGet]
-		public JsonResult GetUser(int id)
+		public async Task<JsonResult> GetUser(int id)
 		{
-			var result = _context.Users.Find(id);
-
+			var result = await _client.GetUser(id);
 			return result is null ? new JsonResult(NotFound()) : new JsonResult(Ok(result));
 		}
 
 		[HttpPost]
-		public JsonResult CreateUser(User user)
+		public async Task<JsonResult> CreateUser(User user)
 		{
-			if (user.Id == 0)
-			{
-				_context.Users.Add(user);
-			}
-			else
-			{
-				var userInDB = _context.Posts.Find(user.Id);
-
-				if (userInDB is null)
-				{
-					return new JsonResult(NotFound());
-				}
-			}
-
-			_context.SaveChanges();
-
-			return new JsonResult(Ok(user));
+			var result = await _client.CreateUser(user);
+			return result is null ? new JsonResult(BadRequest()) : new JsonResult(Ok(result));
 		}
 
 		[HttpPut("{id}")]
-		public JsonResult UpdateUser(int id, User updatedUser)
+		public async Task<JsonResult> UpdateUser(int id, User updatedUser)
 		{
-			var userInDb = _context.Users.Find(id);
-			if (userInDb is null)
-				return new JsonResult(NotFound());
-
-			userInDb.FirstName = updatedUser.FirstName;
-			userInDb.LastName = updatedUser.LastName;
-			userInDb.Email = updatedUser.Email;
-			userInDb.Avatar = updatedUser.Avatar;
-
-			_context.SaveChanges();
-			return new JsonResult(Ok(userInDb));
+			var result = await _client.UpdateUser(id, updatedUser);
+			return result is null ? new JsonResult(NotFound()) : new JsonResult(Ok(result));
 		}
 
 		[HttpDelete("{id}")]
-		public JsonResult DeletePost(int id)
+		public async Task<JsonResult> DeleteUser(int id)
 		{
-			var userInDB = _context.Users.Find(id);
-			if (userInDB is not null)
-			{
-				_context.Users.Remove(userInDB);
-				_context.SaveChanges();
-			}
-
-			return new JsonResult(NoContent());
+			var success = await _client.DeleteUser(id);
+			return success ? new JsonResult(NoContent()) : new JsonResult(NotFound());
 		}
 	}
 }

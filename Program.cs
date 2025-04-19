@@ -1,6 +1,5 @@
-
 using Homework1.Data;
-using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Homework1
 {
@@ -12,7 +11,31 @@ namespace Homework1
 
 			// Add services to the container.
 
-			builder.Services.AddDbContext<APIContext>(option => option.UseInMemoryDatabase("PostsDB"));
+			//builder.Services.AddDbContext<APIContext>(option => option.UseInMemoryDatabase("PostsDB"));
+
+			builder.Services.AddHttpClient<JsonPlaceholderClient>((sp, client) =>
+			{
+				var config = sp.GetRequiredService<IConfiguration>();
+				var baseUrl = config["JsonPlaceholder:BaseUrl"];
+				client.BaseAddress = new Uri(baseUrl);
+			});
+
+			builder.Services.AddHttpClient<ReqResClient>((sp, client) =>
+			{
+				var config = sp.GetRequiredService<IConfiguration>();
+				client.BaseAddress = new Uri(config["ReqRes:BaseUrl"]);
+			});
+
+			Log.Logger = new LoggerConfiguration()
+				.WriteTo.File(
+					"Logs/log-.txt",
+					rollingInterval: RollingInterval.Day,
+					retainedFileCountLimit: 7,
+					outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+				)
+				.CreateLogger();
+
+			builder.Host.UseSerilog();
 
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
