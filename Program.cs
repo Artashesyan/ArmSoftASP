@@ -1,6 +1,5 @@
-
 using Homework1.Data;
-using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Homework1
 {
@@ -27,7 +26,16 @@ namespace Homework1
 				client.BaseAddress = new Uri(config["ReqRes:BaseUrl"]);
 			});
 
+			Log.Logger = new LoggerConfiguration()
+				.WriteTo.File(
+					"Logs/log-.txt",
+					rollingInterval: RollingInterval.Day,
+					retainedFileCountLimit: 7,
+					outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+				)
+				.CreateLogger();
 
+			builder.Host.UseSerilog();
 
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
