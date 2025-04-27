@@ -1,6 +1,6 @@
 
-using Homework1.Data;
-using Microsoft.EntityFrameworkCore;
+using Homework1.Clients;
+using Homework1.Options;
 
 namespace Homework1
 {
@@ -14,19 +14,18 @@ namespace Homework1
 
 			//builder.Services.AddDbContext<APIContext>(option => option.UseInMemoryDatabase("PostsDB"));
 
-			builder.Services.AddHttpClient<JsonPlaceholderClient>((sp, client) =>
-			{
-				var config = sp.GetRequiredService<IConfiguration>();
-				var baseUrl = config["JsonPlaceholder:BaseUrl"];
-				client.BaseAddress = new Uri(baseUrl);
-			});
+			builder.Services.AddOptions<JsonPlaceholderOptions>()
+				.Bind(builder.Configuration.GetSection("JsonPlaceholder"))
+				.ValidateDataAnnotations()
+				.ValidateOnStart();
+			builder.Services.AddHttpClient<JsonPlaceholderClient>();
 
-			builder.Services.AddHttpClient<ReqResClient>((sp, client) =>
-			{
-				var config = sp.GetRequiredService<IConfiguration>();
-				client.BaseAddress = new Uri(config["ReqRes:BaseUrl"]);
-			});
 
+			builder.Services.AddOptions<ReqResOptions>()
+				.Bind(builder.Configuration.GetSection("ReqRes"))
+				.ValidateDataAnnotations()
+				.ValidateOnStart();
+			builder.Services.AddHttpClient<ReqResClient>();
 
 
 			builder.Services.AddControllers();
