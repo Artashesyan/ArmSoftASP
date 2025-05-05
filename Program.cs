@@ -1,6 +1,6 @@
 
-using Homework1.Data;
-using Microsoft.EntityFrameworkCore;
+using Homework1.Clients;
+using Homework1.Options;
 
 namespace Homework1
 {
@@ -12,7 +12,21 @@ namespace Homework1
 
 			// Add services to the container.
 
-			builder.Services.AddDbContext<APIContext>(option => option.UseInMemoryDatabase("PostsDB"));
+			//builder.Services.AddDbContext<APIContext>(option => option.UseInMemoryDatabase("PostsDB"));
+
+			builder.Services.AddOptions<JsonPlaceholderOptions>()
+				.Bind(builder.Configuration.GetSection("JsonPlaceholder"))
+				.ValidateDataAnnotations()
+				.ValidateOnStart();
+			builder.Services.AddHttpClient<JsonPlaceholderClient>();
+
+
+			builder.Services.AddOptions<ReqResOptions>()
+				.Bind(builder.Configuration.GetSection("ReqRes"))
+				.ValidateDataAnnotations()
+				.ValidateOnStart();
+			builder.Services.AddHttpClient<ReqResClient>();
+
 
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
