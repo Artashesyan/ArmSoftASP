@@ -1,27 +1,34 @@
-﻿using Homework1.Models;
+﻿using Homework1.Clients.Interfaces;
+using Homework1.Models;
 using Homework1.Options;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
 namespace Homework1.Clients
 {
-    public class JsonPlaceholderClient
-    {
-        private readonly HttpClient _http;
+    public class JsonPlaceholderClient : IJsonPlaceholderClient
+	{
+        private readonly HttpClient _httpClient;
 		private readonly JsonPlaceholderOptions _options;
 
-		public JsonPlaceholderClient(HttpClient http, IOptions<JsonPlaceholderOptions> options)
+		public JsonPlaceholderClient(HttpClient httpClient, IOptions<JsonPlaceholderOptions> options)
 		{
-			_http = http;
+			_httpClient = httpClient;
 			_options = options.Value;
 
-			_http.BaseAddress = new Uri(_options.BaseUrl);
+			_httpClient.BaseAddress = new Uri(_options.BaseUrl);
 		}
 
-		public async Task<Post?> GetPostById(int id) =>
-            await _http.GetFromJsonAsync<Post>($"posts/{id}");
+		public async Task<IEnumerable<Post?>> GetPostsAsync()
+		{
+			var response = await _httpClient.GetFromJsonAsync<IEnumerable<Post?>>("posts");
+			return response;
+		}
 
-		public async Task<Post?> GetPostByUserAndTitle(int userId, string title)
+		public async Task<Post?> GetPostByIdAsync(int id) =>
+            await _httpClient.GetFromJsonAsync<Post?>($"posts/{id}");
+
+		public async Task<Post?> GetPostByUserIdAndTitleAsync(int userId, string title)
 		{
 			var query = new Dictionary<string, string?>
 			{
@@ -30,25 +37,25 @@ namespace Homework1.Clients
 			};
 
 			var uri = QueryHelpers.AddQueryString("posts", query);
-			var posts = await _http.GetFromJsonAsync<List<Post>>(uri);
+			var posts = await _httpClient.GetFromJsonAsync<List<Post?>>(uri);
 			return posts?.FirstOrDefault();
 		}
 
-		public async Task<Post?> CreatePost(Post post)
+		public async Task<Post?> CreatePostAsync(Post post)
         {
-            var response = await _http.PostAsJsonAsync("posts", post);
-            return await response.Content.ReadFromJsonAsync<Post>();
+            var response = await _httpClient.PostAsJsonAsync("posts", post);
+            return await response.Content.ReadFromJsonAsync<Post?>();
         }
 
-        public async Task<Post?> UpdatePost(int id, Post updated)
+        public async Task<Post?> UpdatePostAsync(int id, Post updatedPost)
         {
-            var response = await _http.PutAsJsonAsync($"posts/{id}", updated);
-            return await response.Content.ReadFromJsonAsync<Post>();
+            var response = await _httpClient.PutAsJsonAsync($"posts/{id}", updatedPost);
+            return await response.Content.ReadFromJsonAsync<Post?>();
         }
 
-        public async Task<bool> DeletePost(int id)
+        public async Task<bool> DeletePostAsync(int id)
         {
-            var response = await _http.DeleteAsync($"posts/{id}");
+            var response = await _httpClient.DeleteAsync($"posts/{id}");
             return response.IsSuccessStatusCode;
         }
     }

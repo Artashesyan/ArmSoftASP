@@ -1,49 +1,53 @@
-﻿using Homework1.Clients;
+﻿using Homework1.DTOs.Post;
 using Homework1.Models;
+using Homework1.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Homework1.Controllers
 {
-	[Route("[controller]")]
 	[ApiController]
-	public class PostsController(JsonPlaceholderClient client) : Controller
+	[Route("[controller]")]
+	public class PostsController(IPostService service) : ControllerBase
 	{
-		private readonly JsonPlaceholderClient _client = client;
+		private readonly IPostService _service = service;
 
-		[HttpGet("{id}")]
-		public async Task<ActionResult<Post>> GetPost(int id)
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<PostReadDTO>>> GetAll() => Ok(await _service.GetAllPostsAsync());
+
+		[HttpGet("{id:int}")]
+		public async Task<ActionResult<PostReadDTO>> Get(int id)
 		{
-			var result = await _client.GetPostById(id);
+			var result = await _service.GetPostByIdAsync(id);
 			return result is null ? NotFound() : Ok(result);
 		}
 
-		[HttpGet]
-		public async Task<ActionResult<Post>> GetPost(int userId, string title)
+		[HttpGet("by-userId-title")]
+		public async Task<ActionResult<PostReadDTO>> Get(int userId, string title)
 		{
-			var result = await _client.GetPostByUserAndTitle(userId, title);
+			var result = await _service.GetPostByUserIdAndTitleAsync(userId, title);
 			return result is null ? NotFound() : Ok(result);
 		}
 
 		[HttpPost]
-		public async Task<ActionResult<Post>> CreatePost(Post post)
+		public async Task<ActionResult<PostReadDTO>> Create(PostCreateDTO postDTO)
 		{
-			var result = await _client.CreatePost(post);
+			var result = await _service.CreatePostAsync(postDTO);
 			return result is null
 				? BadRequest()
 				: Created(string.Empty, result);
 		}
 
 		[HttpPut("{id}")]
-		public async Task<ActionResult<Post>> UpdatePost(int id, Post updatedPost)
+		public async Task<ActionResult<PostReadDTO>> Update(int id, PostUpdateDTO updatedPostDTO)
 		{
-			var result = await _client.UpdatePost(id, updatedPost);
+			var result = await _service.UpdatePostAsync(id, updatedPostDTO);
 			return result is null ? NotFound() : Ok(result);
 		}
 
 		[HttpDelete("{id}")]
-		public async Task<ActionResult<Post>> DeletePost(int id)
+		public async Task<ActionResult<PostReadDTO>> Delete(int id)
 		{
-			await _client.DeletePost(id);
+			await _service.DeletePostAsync(id);
 			return NoContent();
 		}
 	}
