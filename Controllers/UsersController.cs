@@ -24,10 +24,17 @@ namespace Homework1.Controllers
 			return user == null ? NotFound() : Ok(user);
 		}
 
+		[HttpGet("by-name")]
+		public async Task<ActionResult<UserReadDTO>> Get(string firstName, string lastName)
+		{
+			var user = await _service.GetUserByNameAsync(firstName, lastName);
+			return user == null ? NotFound() : Ok(user);
+		}
+
 		[HttpPost]
 		public async Task<ActionResult<UserReadDTO>> Create(UserCreateDTO userDTO)
 		{
-			if(await _service.GetUserByNameAsync(userDTO.FirstName, userDTO.LastName))
+			if(await _service.GetUserByNameAsync(userDTO.FirstName, userDTO.LastName) is not null)
 			{
 				return BadRequest(new { message = "A user with that name already exists." });
 			}

@@ -3,26 +3,27 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Homework1.DTOs.Entity
 {
-	public class EntityPatchDTO
+	public class EntityPatchDTO : EntityValidatedDTO
 	{
 		[MinLength(3)]
-		public string? Username { get; set; }
+		public new string? Username { get; set; }
 
 		[EmailAddress]
-		public string? Email { get; set; }
+		public new string? Email { get; set; }
 
 		[PasswordStrength]
-		public string? Password { get; set; }
+		public new string? Password { get; set; }
 
 		[PastDate]
-		public string? DateOfBirth { get; set; }
+		public new string? DateOfBirth { get; set; }
 
-		[Range(1, int.MaxValue)]
-		public int? Quantity { get; set; }
+		[Range(0, int.MaxValue)]
+		public new int? Quantity { get; set; }
 
-		public decimal? Price { get; set; }
+		[Range(0, double.MaxValue)]
+		public new decimal? Price { get; set; }
 
 		[Range(0, 49)]
-		public int? Amount { get; set; }
+		public new int? Amount { get; set; }
 	}
 }

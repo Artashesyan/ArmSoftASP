@@ -6,16 +6,10 @@ using Homework1.Services.Interfaces;
 
 namespace Homework1.Services
 {
-	public class UserService : IUserService
+	public class UserService(IReqResClient client, IMapper mapper) : IUserService
 	{
-		private readonly IReqResClient _client;
-		private readonly IMapper _mapper;
-
-		public UserService(IReqResClient client, IMapper mapper)
-		{
-			_client = client;
-			_mapper = mapper;
-		}
+		private readonly IReqResClient _client = client;
+		private readonly IMapper _mapper = mapper;
 
 		public async Task<IEnumerable<UserReadDTO>> GetAllUsersAsync()
 		{
@@ -29,18 +23,10 @@ namespace Homework1.Services
 			return user is null ? null : _mapper.Map<UserReadDTO?>(user);
 		}
 
-		public async Task<bool> GetUserByNameAsync(string firstName, string lastName)
+		public async Task<UserReadDTO?> GetUserByNameAsync(string firstName, string lastName)
 		{
-			var users = await _client.GetUsersAsync();
-			foreach (var user in users) 
-			{
-				if (user.FirstName == firstName && user.LastName == lastName)
-				{
-					return true;
-				}
-			}
-
-			return false;
+			var user = await _client.GetUserByNameAsync(firstName, lastName);
+			return user is null ? null : _mapper.Map<UserReadDTO?>(user);
 		}
 
 		public async Task<UserReadDTO> CreateUserAsync(UserCreateDTO dto)

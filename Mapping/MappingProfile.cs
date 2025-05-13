@@ -19,8 +19,13 @@ namespace Homework1.Mapping
 			CreateMap<UserUpdateDTO, User>();
 
 			CreateMap<Entity, EntityReadDTO>();
+			CreateMap<Entity, EntityPatchDTO>();
 			CreateMap<EntityCreateDTO, Entity>();
 			CreateMap<EntityUpdateDTO, Entity>();
+			CreateMap<EntityPatchDTO, Entity>()
+				.ForAllMembers(options => options.Condition((source, destination, sourceMember) => sourceMember is not null));
+			CreateMap<EntityPatchDTO, EntityUpdateDTO>();
+			CreateMap<EntityReadDTO, EntityPatchDTO>();
 		}
 	}
 }

@@ -4,7 +4,7 @@ namespace Homework1.Options
 {
 	public class ReqResOptions
 	{
-		[Required]
-		public string BaseUrl { get; set; } = string.Empty;
+		public required string BaseUrl { get; set; }
+		public required string ApiKey { get; set; }
 	}
 }

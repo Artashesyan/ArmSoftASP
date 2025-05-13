@@ -19,9 +19,9 @@ namespace Homework1.Clients
 			_httpClient.BaseAddress = new Uri(_options.BaseUrl);
 		}
 
-		public async Task<IEnumerable<Post?>> GetPostsAsync()
+		public async Task<IEnumerable<Post?>?> GetPostsAsync()
 		{
-			var response = await _httpClient.GetFromJsonAsync<IEnumerable<Post?>>("posts");
+			var response = await _httpClient.GetFromJsonAsync<IEnumerable<Post>>("posts");
 			return response;
 		}
 

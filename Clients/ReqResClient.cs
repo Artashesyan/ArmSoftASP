@@ -1,7 +1,11 @@
 ﻿using Homework1.Clients.Interfaces;
 using Homework1.Models;
 using Homework1.Options;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Homework1.Clients
 {
@@ -16,19 +20,55 @@ namespace Homework1.Clients
 			_options = options.Value;
 
 			_httpClient.BaseAddress = new Uri(_options.BaseUrl);
+			_httpClient.DefaultRequestHeaders.Add("x-api-key", _options.ApiKey);
 		}
 
 		public async Task<IEnumerable<User>> GetUsersAsync()
 		{
-			var response = await _httpClient.GetFromJsonAsync<ApiResponse<User>>("users?page=2");
-			return response?.Data;
+			var allUsers = new List<User>();
+			int page = 1;
+			int totalPages;
+
+			do
+			{
+				var response = await _httpClient.GetFromJsonAsync<ApiResponse<User>>("users?page=" + page);
+
+				if (response?.Data is not null)
+				{
+					allUsers.AddRange(response.Data);
+					totalPages = response.TotalPages;
+				}
+				else
+				{
+					break;
+				}
+
+				++page;
+			}
+			while (page <= totalPages);
+
+			return allUsers;
 		}
 
-		public async Task<User> GetUserByIdAsync(int id)
+		public async Task<User?> GetUserByIdAsync(int id)
         {
             var response = await _httpClient.GetFromJsonAsync<ApiSingleResponse<User>>($"users/{id}");
             return response?.Data;
         }
+
+		public async Task<User?> GetUserByNameAsync(string firstName, string lastName)
+		{
+			var users = await GetUsersAsync();
+			foreach (var user in users)
+			{
+				if (user.FirstName == firstName && user.LastName == lastName)
+				{
+					return user;
+				}
+			}
+
+			return null;
+		}
 
         public async Task<User?> CreateUserAsync(User user)
         {
@@ -52,6 +92,8 @@ namespace Homework1.Clients
 	class ApiResponse<T>
 	{
 		public required List<T> Data { get; set; }
+		[JsonPropertyName("total_pages")]
+		public int TotalPages { get; set; }
 	}
 
 	class ApiSingleResponse<T>

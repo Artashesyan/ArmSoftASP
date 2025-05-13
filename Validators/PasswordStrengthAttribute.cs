@@ -5,10 +5,10 @@ namespace Homework1.Validators
 {
 	public class PasswordStrengthAttribute : ValidationAttribute
 	{
-		protected override ValidationResult IsValid(object value, ValidationContext context)
+		protected override ValidationResult? IsValid(object? value, ValidationContext context)
 		{
 			if (value is not string password) return new ValidationResult("Password required.");
-			var entity = (EntityPatchDTO)context.ObjectInstance;
+			var entity = (EntityValidatedDTO)context.ObjectInstance;
 
 			if (password.Length < 6)
 			{
@@ -40,7 +40,7 @@ namespace Homework1.Validators
 				return new ValidationResult("Password must have at least one Armenian letter.");
 			}
 
-			if (password.Contains(entity.Username ?? "", StringComparison.OrdinalIgnoreCase))
+			if (entity.Username is not null && password.Contains(entity.Username, StringComparison.OrdinalIgnoreCase))
 			{
 				return new ValidationResult("Password mustn't contain the Username.");
 			}

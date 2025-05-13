@@ -1,4 +1,3 @@
-
 using Homework1.Clients;
 using Homework1.Clients.Interfaces;
 using Homework1.Options;
@@ -39,6 +38,7 @@ namespace Homework1
 
 			builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 			builder.Services.AddControllers();
+			builder.Services.AddControllers().AddNewtonsoftJson();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();

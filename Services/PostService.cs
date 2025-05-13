@@ -6,16 +6,10 @@ using Homework1.Services.Interfaces;
 
 namespace Homework1.Services
 {
-	public class PostService : IPostService
+	public class PostService(IJsonPlaceholderClient client, IMapper mapper) : IPostService
 	{
-		private readonly IJsonPlaceholderClient _client;
-		private readonly IMapper _mapper;
-
-		public PostService(IJsonPlaceholderClient client, IMapper mapper)
-		{
-			_client = client;
-			_mapper = mapper;
-		}
+		private readonly IJsonPlaceholderClient _client = client;
+		private readonly IMapper _mapper = mapper;
 
 		public async Task<IEnumerable<PostReadDTO>> GetAllPostsAsync()
 		{
